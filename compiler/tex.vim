@@ -2,7 +2,7 @@
 "            Type: compiler plugin for LaTeX
 " Original Author: Artem Chuprina <ran@ran.pp.ru>
 "   Customization: Srinath Avadhanula <srinath@fastmail.fm>
-"     Last Change: Mon Apr 01 02:00 AM 2002 PST
+"             CVS: $Id: tex.vim,v 1.6 2003/07/24 02:52:35 srinathava Exp $
 " Description:  {{{
 "   This file sets the 'makeprg' and 'errorformat' options for the LaTeX
 "   compiler. It is customizable to optionally ignore certain warnings and
@@ -75,16 +75,18 @@ let b:doneTexCompiler = 1
 " carefully, otherwise you might end up losing valuable information.
 if !exists('g:Tex_IgnoredWarnings')
 	let g:Tex_IgnoredWarnings =
-		\'Underfull¡'.
-		\'Overfull¡'.
-		\'specifier changed to¡'.
-		\'You have requested¡'.
-		\'Missing number, treated as zero.'
+		\'Underfull'."\n".
+		\'Overfull'."\n".
+		\'specifier changed to'."\n".
+		\'You have requested'."\n".
+		\'Missing number, treated as zero.'."\n".
+		\'There were undefined references'."\n".
+		\'Citation %.%# undefined'
 endif
 " This is the number of warnings in the g:Tex_IgnoredWarnings string which
 " will be ignored.
 if !exists('g:Tex_IgnoreLevel')
-	let g:Tex_IgnoreLevel = 4
+	let g:Tex_IgnoreLevel = 7
 endif
 " There will be lots of stuff in a typical compiler output which will
 " completely fall through the 'efm' parsing. This options sets whether or not
@@ -106,45 +108,79 @@ endif
 " }}}
 " ==============================================================================
 " Customization of 'makeprg': {{{
-" If buffer-local variable 'tex_flavor' exists, it defines TeX flavor,
-" otherwize the same for global variable with same name, else it will be LaTeX
-if exists("b:tex_flavor")
-	let current_compiler = b:tex_flavor
-elseif exists("g:tex_flavor")
-	let current_compiler = g:tex_flavor
+
+" There are several alternate ways in which 'makeprg' is set up. 
+"
+" Case 1
+" ------
+" The first is when this file is a part of latex-suite. In this case, a
+" variable called g:Tex_DefaultTargetFormat exists, which gives the default
+" format .tex files should be compiled into. In this case, we use the TTarget
+" command provided by latex-suite.
+"
+" Case 2
+" ------
+" The user is using this file without latex-suite AND he wants to directly
+" specify the complete 'makeprg'. Then he should set the g:Tex_CompileRule_dvi
+" variable. This is a string which should be directly be able to be cast into
+" &makeprg. An example of one such string is:
+"
+" 	g:Tex_CompileRule_dvi = 'pdflatex \\nonstopmode \\input\{$*\}'
+"
+" NOTE: You will need to escape back-slashes, {'s etc yourself if you are
+"       using this file independently of latex-suite.
+" TODO: Should we also have a check for backslash escaping here based on
+"       platform?
+"
+" Case 3
+" ------
+" The use is using this file without latex-suite and he doesnt want any
+" customization. In this case, this file makes some intelligent guesses based
+" on the platform. If he doesn't want to specify the complete 'makeprg' but
+" only the name of the compiler program (for example 'pdflatex' or 'latex'),
+" then he sets b:tex_flavor or g:tex_flavor. 
+
+if exists('g:Tex_DefaultTargetFormat')
+	exec 'TTarget '.g:Tex_DefaultTargetFormat
+elseif exists('g:Tex_CompileRule_dvi')
+	let &l:makeprg = g:Tex_CompileRule_dvi
 else
-	let current_compiler = "latex"
-end
-" If the user wants a particular way in which the latex compiler needs to be
-" called, then he should use the g:Tex_CompilerFormat variable. This variable
-" needs to be complete, i.e it should contain $* and stuff.
-if exists('g:Tex_CompilerFormat')
-	let &makeprg = current_compiler.g:Tex_CompilerFormat
-else
+	" If buffer-local variable 'tex_flavor' exists, it defines TeX flavor,
+	" otherwize the same for global variable with same name, else it will be LaTeX
+	if exists("b:tex_flavor")
+		let current_compiler = b:tex_flavor
+	elseif exists("g:tex_flavor")
+		let current_compiler = g:tex_flavor
+	else
+		let current_compiler = "latex"
+	end
+	if has('win32')
+		let escChars = ''
+	else
+		let escChars = '{}\'
+	endif
 	" Furthermore, if 'win32' is detected, then we want to set the arguments up so
 	" that miktex can handle it.
 	if has('win32')
-		let &makeprg = current_compiler.' --src-specials -interaction=nonstopmode $*'
+		let options = '--src-specials'
 	else
-		if &shell =~ 'sh'
-			let &makeprg = current_compiler.'\\nonstopmode \\input\{$*\}'
-		else
-			let &makeprg = current_compiler.'\nonstopmode \input{$*}'
-		endif
+		let options = ''
 	endif
+	let &l:makeprg = current_compiler . ' ' . options .
+				\ escape(' \nonstopmode \input{$*}', escChars)
 endif
 
 " }}}
 " ==============================================================================
 " Functions for setting up a customized 'efm' {{{
-"
+
 " IgnoreWarnings: parses g:Tex_IgnoredWarnings for message customization {{{
 " Description: 
 function! <SID>IgnoreWarnings()
 	let i = 1
-	while s:Strntok(g:Tex_IgnoredWarnings, '¡', i) != '' &&
+	while s:Strntok(g:Tex_IgnoredWarnings, "\n", i) != '' &&
 				\ i <= g:Tex_IgnoreLevel
-		let warningPat = s:Strntok(g:Tex_IgnoredWarnings, '¡', i)
+		let warningPat = s:Strntok(g:Tex_IgnoredWarnings, "\n", i)
 		let warningPat = escape(substitute(warningPat, '[\,]', '%\\\\&', 'g'), ' ')
 		exe 'setlocal efm+=%-G%.%#'.warningPat.'%.%#'
 		let i = i + 1
@@ -177,7 +213,7 @@ function! <SID>SetLatexEfm()
 	exec 'setlocal efm+=%'.pm.'C%.%#[]%.%#'
 	exec 'setlocal efm+=%'.pm.'C[]%.%#'
 	exec 'setlocal efm+=%'.pm.'C%.%#%[{}\\]%.%#'
-	exec 'setlocal efm+=%'.pm.'C<%.%#>%.%#'
+	exec 'setlocal efm+=%'.pm.'C<%.%#>%m'
 	exec 'setlocal efm+=%'.pm.'C\ \ %m'
 	exec 'setlocal efm+=%'.pm.'GSee\ the\ LaTeX%m'
 	exec 'setlocal efm+=%'.pm.'GType\ \ H\ <return>%m'
@@ -215,21 +251,32 @@ endfun
 
 " }}}
 " SetTexCompilerLevel: sets the "level" for the latex compiler {{{
-function! <SID>SetTexCompilerLevel(level)
-	if a:level == 'strict'
-		let g:Tex_ShowallLines = 1
-	elseif a:level =~ '^\d\+$'
-		let g:Tex_ShowallLines = 0
-		let g:Tex_IgnoreLevel = a:level
+function! <SID>SetTexCompilerLevel(...)
+	if a:0 > 0
+		let level = a:1
 	else
-		echoerr "SetTexCompilerLevel: Unkwown option [".a:level."]"
+		call Tex_ResetIncrementNumber(0)
+		echo substitute(g:Tex_IgnoredWarnings, 
+			\ '^\|\n\zs\S', '\=Tex_IncrementNumber(1)." ".submatch(0)', 'g')
+		let level = input("\nChoose an ignore level: ")
+		if level == ''
+			return
+		endif
+	endif
+	if level == 'strict'
+		let g:Tex_ShowallLines = 1
+	elseif level =~ '^\d\+$'
+		let g:Tex_ShowallLines = 0
+		let g:Tex_IgnoreLevel = level
+	else
+		echoerr "SetTexCompilerLevel: Unkwown option [".level."]"
 	end
 	call s:SetLatexEfm()
 endfunction 
 
-com! -nargs=1 TCLevel :call <SID>SetTexCompilerLevel(<f-args>)
+com! -nargs=? TCLevel :call <SID>SetTexCompilerLevel(<f-args>)
 " }}}
-"
+
 " }}}
 " ==============================================================================
 

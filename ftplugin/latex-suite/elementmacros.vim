@@ -2,7 +2,6 @@
 " 	     File: elementmacros.vim
 "      Author: Mikolaj Machowski
 "     Created: Tue Apr 23 06:00 PM 2002 PST
-" Last Change: wto lis 05 02:00  2002 C
 " 
 "  Description: macros for dimensions/fonts/counters.
 "               and various common commands such ref/label/footnote.
@@ -54,14 +53,14 @@ if !exists('s:definedFuncs') " {{{
 		if !exists('s:doneOnce') && g:Tex_FontMaps
 			exe "vnoremap <silent> ".g:Tex_Leader.vislhs.
 				\" \<C-\\>\<C-N>:call VEnclose('\\text".vislhs."{', '}', '{\\".vislhs.a:fam." ', '}')<CR>"
-			exe 'call IMAP ("'.a:font.'", "\\text'.vislhs.'{ä}«»", "tex")'
+			exe 'call IMAP ("'.a:font.'", "\\text'.vislhs.'{<++>}<++>", "tex")'
 		endif
 
 		" menu entry.
 		if g:Tex_Menus && g:Tex_FontMenus
 			let location = s:fontMenuLoc.substitute(a:fam, '^.', '\u&', '').'.'.vislhs.a:fam.'<tab>'.a:font.'\ ('.g:Tex_Leader.vislhs.')'
 			exe "amenu ".location.
-				\" <plug><C-r>=IMAP_PutTextWithMovement('\\text".vislhs."{ä}«»')<CR>"
+				\" <plug><C-r>=IMAP_PutTextWithMovement('\\text".vislhs."{<++>}<++>')<CR>"
 			exe "vmenu ".location.
 				\" \<C-\\>\<C-N>:call VEnclose('\\text".vislhs."{', '}', '{\\".vislhs.a:fam." ', '}')<CR>"
 		endif
@@ -74,7 +73,7 @@ if !exists('s:definedFuncs') " {{{
 	function! <SID>Tex_FontDiacritics(name, rhs)
 		let location = s:fontMenuLoc.'&Diacritics.'.a:name.'<tab>'
 		exe 'amenu '.location.
-			\" <plug><C-r>=IMAP_PutTextWithMovement('\\".a:rhs."{«»}«»')<CR>"
+			\" <plug><C-r>=IMAP_PutTextWithMovement('\\".a:rhs."{<++>}<++>')<CR>"
 		exe 'vmenu '.location.
 			\" \<C-\\>\<C-n>:call VEnclose('\\".a:rhs."{', '}', '', '')<CR>" 
 	endfunction " }}}
@@ -131,7 +130,7 @@ call <SID>Tex_FontFamily("FIT","shape")
 
 " the \emph is special.
 if g:Tex_FontMaps | exe "vnoremap <silent> ".g:Tex_Leader."em \<C-\\>\<C-N>:call VEnclose('\\emph{', '}', '{\\em', '\\/}')<CR>" | endif
-if g:Tex_FontMaps | exe 'call IMAP ("FEM", "\\emph{ä}«»", "tex")' | endif
+if g:Tex_FontMaps | exe 'call IMAP ("FEM", "\\emph{<++>}<++>", "tex")' | endif
 
 " }}}
 if g:Tex_Menus && g:Tex_FontMenus
@@ -165,11 +164,11 @@ if g:Tex_Menus && g:Tex_FontMenus
 	call <SID>Tex_FontSize('Huge')
 	" }}}
 	" {{{ &font.
-	call s:Tex_Fontfont('fontencoding{}',               '\fontencoding{ä}«»')
-	call s:Tex_Fontfont('fontfamily{qtm}',              '\fontfamily{ä}«»')
-	call s:Tex_Fontfont('fontseries{m\ b\ bx\ sb\ c}',  '\fontseries{ä}«»')
-	call s:Tex_Fontfont('fontshape{n\ it\ sl\ sc\ ui}', '\fontshape{ä}«»')
-	call s:Tex_Fontfont('fontsize{}{}',                 '\fontsize{ä}{«»}«»')
+	call s:Tex_Fontfont('fontencoding{}',               '\fontencoding{<++>}<++>')
+	call s:Tex_Fontfont('fontfamily{qtm}',              '\fontfamily{<++>}<++>')
+	call s:Tex_Fontfont('fontseries{m\ b\ bx\ sb\ c}',  '\fontseries{<++>}<++>')
+	call s:Tex_Fontfont('fontshape{n\ it\ sl\ sc\ ui}', '\fontshape{<++>}<++>')
+	call s:Tex_Fontfont('fontsize{}{}',                 '\fontsize{<++>}{<++>}<++>')
 	call s:Tex_Fontfont('selectfont',                   '\selectfont ')
 	" }}}
 endif
@@ -319,13 +318,14 @@ endif
 " ============================================================================== 
 if g:Tex_Menus
 	" Various {{{
-	call <SID>Tex_VariousMenus('ref{}'         , '\ref{ä}«»')
-	call <SID>Tex_VariousMenus('pageref{}'     , '\pageref{ä}«»')
-	call <SID>Tex_VariousMenus('label{}'       , '\label{ä}«»')
-	call <SID>Tex_VariousMenus('footnote{}'    , '\footnote{ä}«»')
-	call <SID>Tex_VariousMenus('footnotemark{}', '\footnotemark{ä}«»')
-	call <SID>Tex_VariousMenus('footnotemark{}', '\footnotetext{ä}«»')
-	call <SID>Tex_VariousMenus('cite{}'        , '\cite{ä}«»')
+	call <SID>Tex_VariousMenus('ref{}'         , '\ref{<++>}<++>')
+	call <SID>Tex_VariousMenus('pageref{}'     , '\pageref{<++>}<++>')
+	call <SID>Tex_VariousMenus('label{}'       , '\label{<++>}<++>')
+	call <SID>Tex_VariousMenus('footnote{}'    , '\footnote{<++>}<++>')
+	call <SID>Tex_VariousMenus('footnotemark{}', '\footnotemark{<++>}<++>')
+	call <SID>Tex_VariousMenus('footnotemark{}', '\footnotetext{<++>}<++>')
+	call <SID>Tex_VariousMenus('cite{}'        , '\cite{<++>}<++>')
+	call <SID>Tex_VariousMenus('nocite{}'      , '\nocite{<++>}<++>')
 	" }}}
 endif
 
@@ -335,4 +335,4 @@ endif
 " this is for avoiding reinclusion of imaps from next time on.
 let s:doneOnce = 1
 
-" vim:fdm=marker:ts=4:sw=4:noet
+" vim:fdm=marker:ff=unix:noet:ts=4:sw=4

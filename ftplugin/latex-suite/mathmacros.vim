@@ -2,7 +2,6 @@
 " 	     File: mathmacros.vim
 "      Author: Mikolaj Machowski
 "     Created: Tue Apr 23 06:00 PM 2002 PST
-" Last Change: Mon Apr 29 01:00 PM 2002 PDT
 " 
 "  Description: macros for everything mathematical in latex.
 "=============================================================================
@@ -11,20 +10,21 @@ if !(has('gui_running') && g:Tex_MathMenus && g:Tex_Menus)
 	finish
 endif
 
-let s:MathMenuName = g:Tex_MenuPrefix.'Ma&th.'
+let s:MathMenuName = g:Tex_MenuPrefix.'&Math.'
 
 function! Tex_MathMenuRemove()
 	exe 'silent! aunmenu '.s:MathMenuName
 endfunction
 
-let s:pA = 'amenu <silent> 85 '.s:MathMenuName
+let s:pA = 'amenu <silent> '.g:Tex_NextMenuLocation.' '.s:MathMenuName
+let g:Tex_NextMenuLocation = g:Tex_NextMenuLocation + 1
 
-" brackets and dollars {{{2
-exe s:pA.'\\&[\ \\]                 <plug>\[\]<Left><Left>'
-exe s:pA.'\\&(\ \\)                 <plug>\(\)<Left><Left>'
+" brackets and dollars {{{
+exe s:pA.'\\&[\ \\]                 <plug><C-r>=IMAP_PutTextWithMovement("\\[<++>\\]<++>")<cr>'
+exe s:pA.'\\&(\ \\)                 <plug><C-r>=IMAP_PutTextWithMovement("\\(<++>\\)<++>")<cr>'
 exe s:pA.'&$\ $                     <plug>$$'
 exe s:pA.'-sepmath1- :'
-" 2}}}
+" }}}
 " MATH arrows {{{
 let s:pA1 = s:pA."&Arrows."
 exe s:pA1.'Leftarrow                <plug>\leftarrow '
@@ -51,6 +51,7 @@ exe s:pA1.'searrow                  <plug>\searrow '
 exe s:pA1.'swarrow                  <plug>\swarrow '
 exe s:pA1.'nwarrow                  <plug>\nwarrow '
 exe s:pA1.'mapsto                   <plug>\mapsto '
+exe s:pA1.'leadsto                  <plug>\leadsto '
 exe s:pA1.'longmapsto               <plug>\longmapsto '
 exe s:pA1.'hookleftarrow            <plug>\hookleftarrow '
 exe s:pA1.'hookrightarrow           <plug>\hookrightarrow '
@@ -59,8 +60,17 @@ exe s:pA1.'leftharpoondown          <plug>\leftharpoondown '
 exe s:pA1.'rightharpoonup           <plug>\rightharpoonup '
 exe s:pA1.'rightharpoondown         <plug>\rightharpoondown '
 exe s:pA1.'rightleftharpoons        <plug>\rightleftharpoons '
-exe s:pA1.'Leftarrow                <plug>\Leftarrow'
+exe s:pA1.'overleftarrow            <plug>\overleftarrow '
+exe s:pA1.'overrightarrow           <plug>\overrightarrow '
+exe s:pA1.'overleftrightarrow       <plug>\overleftrightarrow '
+exe s:pA1.'underleftarrow           <plug>\underleftarrow '
+exe s:pA1.'underrightarrow          <plug>\underrightarrow '
+exe s:pA1.'underleftrightarrow      <plug>\underleftrightarrow '
+exe s:pA1.'xleftarrow               <plug>\xleftarrow '
+exe s:pA1.'xrightarrow              <plug>\xrightarrow '
 " }}}
+
+
 " MATH nArrows {{{
 let s:pA1a = s:pA."&nArrows."
 exe s:pA1a.'nleftarrow              <plug>\nleftarrow '
@@ -69,17 +79,51 @@ exe s:pA1a.'nleftrightarrow         <plug>\nleftrightarrow '
 exe s:pA1a.'nrightarrow             <plug>\nrightarrow '
 exe s:pA1a.'nRightarrow             <plug>\nRightarrow '
 " }}}
+" MATH Arrows2 {{{
+let s:pA1a = s:pA."Arrows2."
+exe s:pA1a.'dashleftarrow               <plug>\dashleftarrow '
+exe s:pA1a.'leftleftarrows              <plug>\leftleftarrows '
+exe s:pA1a.'leftrightarrows             <plug>\leftrightarrows '
+exe s:pA1a.'Lleftarrow                  <plug>\Lleftarrow '
+exe s:pA1a.'twoheadleftarrow            <plug>\twoheadleftarrow '
+exe s:pA1a.'leftarrowtail               <plug>\leftarrowtail '
+exe s:pA1a.'leftrightharpoons           <plug>\leftrightharpoons '
+exe s:pA1a.'Lsh                         <plug>\Lsh '
+exe s:pA1a.'looparrowleft               <plug>\looparrowleft '
+exe s:pA1a.'curvearrowleft              <plug>\curvearrowleft '
+exe s:pA1a.'circlearrowleft             <plug>\circlearrowleft '
+exe s:pA1a.'dashrightarrow              <plug>\dashrightarrow '
+exe s:pA1a.'rightrightarrows            <plug>\rightrightarrows '
+exe s:pA1a.'rightleftarrows             <plug>\rightleftarrows '
+exe s:pA1a.'Rrightarrow                 <plug>\Rrightarrow '
+exe s:pA1a.'twoheadrightarrow           <plug>\twoheadrightarrow '
+exe s:pA1a.'rightarrowtail              <plug>\rightarrowtail '
+exe s:pA1a.'rightleftharpoons           <plug>\rightleftharpoons '
+exe s:pA1a.'Rsh                         <plug>\Rsh '
+exe s:pA1a.'looparrowright              <plug>\looparrowright '
+exe s:pA1a.'curvearrowright             <plug>\curvearrowright '
+exe s:pA1a.'circlearrowright            <plug>\circlearrowright '
+exe s:pA1a.'multimap                    <plug>\multimap '
+exe s:pA1a.'upuparrows                  <plug>\upuparrows '
+exe s:pA1a.'downdownarrows              <plug>\downdownarrows '
+exe s:pA1a.'upharpoonleft               <plug>\upharpoonleft '
+exe s:pA1a.'upharpoonright              <plug>\upharpoonright '
+exe s:pA1a.'downharpoonleft             <plug>\downharpoonleft '
+exe s:pA1a.'downharpoonright            <plug>\downharpoonright '
+exe s:pA1a.'rightsquigarrow             <plug>\rightsquigarrow '
+exe s:pA1a.'leftrightsquigarrow         <plug>\leftrightsquigarrow '
+" }}}
 " MATH Fonts {{{
 let s:pA2a = s:pA."&MathFonts."
-exe s:pA2a.'mathbf{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathbf{ä}«»")<cr>'
-exe s:pA2a.'mathrm{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathrm{ä}«»")<cr>'
-exe s:pA2a.'mathsf{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathsf{ä}«»")<cr>'
-exe s:pA2a.'mathtt{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathtt{ä}«»")<cr>'
-exe s:pA2a.'mathit{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathit{ä}«»")<cr>'
-exe s:pA2a.'mathfrak{}              <plug><C-r>=IMAP_PutTextWithMovement("\\mathfrak{ä}«»")<cr>'
-exe s:pA2a.'mathcal{}               <plug><C-r>=IMAP_PutTextWithMovement("\\mathcal{ä}«»")<cr>'
-exe s:pA2a.'mathscr{}               <plug><C-r>=IMAP_PutTextWithMovement("\\mathscr{ä}«»")<cr>'
-exe s:pA2a.'mathbb{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathbb{ä}«»")<cr>'
+exe s:pA2a.'mathbf{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathbf{<++>}<++>")<cr>'
+exe s:pA2a.'mathrm{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathrm{<++>}<++>")<cr>'
+exe s:pA2a.'mathsf{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathsf{<++>}<++>")<cr>'
+exe s:pA2a.'mathtt{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathtt{<++>}<++>")<cr>'
+exe s:pA2a.'mathit{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathit{<++>}<++>")<cr>'
+exe s:pA2a.'mathfrak{}              <plug><C-r>=IMAP_PutTextWithMovement("\\mathfrak{<++>}<++>")<cr>'
+exe s:pA2a.'mathcal{}               <plug><C-r>=IMAP_PutTextWithMovement("\\mathcal{<++>}<++>")<cr>'
+exe s:pA2a.'mathscr{}               <plug><C-r>=IMAP_PutTextWithMovement("\\mathscr{<++>}<++>")<cr>'
+exe s:pA2a.'mathbb{}                <plug><C-r>=IMAP_PutTextWithMovement("\\mathbb{<++>}<++>")<cr>'
 " }}}
 " Greek Letters small {{{
 let s:pA2 = s:pA."&Greek.&Small."
@@ -152,7 +196,7 @@ exe s:pA4.'prec                     <plug>\prec '
 exe s:pA4.'preceq                   <plug>\preceq '
 exe s:pA4.'preccurlyeq              <plug>\preccurlyeq '
 exe s:pA4.'curlyeqprec              <plug>\curlyeqprec '
-exe s:pA4.'lessim                   <plug>\lessim '
+exe s:pA4.'lesssim                   <plug>\lesssim '
 exe s:pA4.'lessapprox               <plug>\lessapprox '
 exe s:pA4.'precsim                  <plug>\precsim '
 exe s:pA4.'precapprox               <plug>\precapprox '
@@ -214,7 +258,7 @@ exe s:pA5.'eqslantgtr               <plug>\eqslantgtr '
 exe s:pA5.'gtrdot                   <plug>\gtrdot '
 exe s:pA5.'succ                     <plug>\succ '
 exe s:pA5.'succeq                   <plug>\succeq '
-exe s:pA5.'succcurllyeq             <plug>\succcurllyeq '
+exe s:pA5.'succcurlyeq              <plug>\succcurlyeq '
 exe s:pA5.'curlyeqsucc              <plug>\curlyeqsucc '
 exe s:pA5.'gtrsim                   <plug>\gtrsim '
 exe s:pA5.'gtrapprox                <plug>\gtrapprox '
@@ -238,7 +282,7 @@ exe s:pA5.'bowtie                   <plug>\bowtie '
 exe s:pA5.'Join                     <plug>\Join '
 exe s:pA5.'pitchfork                <plug>\pitchfork '
 " }}}
-" {{{ BinaryRel2
+" {{{ nBinaryRel2
 let s:pA5a = s:pA."n&BinaryRel2."  "TODO: dorobiæ logarytmy
 exe s:pA5a.'ngtr                    <plug>\ngtr '
 exe s:pA5a.'ngeqslant               <plug>\ngeqslant '
@@ -248,7 +292,7 @@ exe s:pA5a.'ngeqq                   <plug>\ngeqq '
 exe s:pA5a.'gneqq                   <plug>\gneqq '
 exe s:pA5a.'nsucc                   <plug>\nsucc '
 exe s:pA5a.'nsucceq                 <plug>\nsucceq '
-exe s:pA5a.'succneq                 <plug>\succneq '
+exe s:pA5a.'succneqq                <plug>\succneqq '
 exe s:pA5a.'gnsim                   <plug>\gnsim '
 exe s:pA5a.'gnapprox                <plug>\gnapprox '
 exe s:pA5a.'succnsim                <plug>\succnsim '
@@ -272,7 +316,7 @@ exe s:pA6.'risingdotseq             <plug>\risingdotseq '
 exe s:pA6.'doteqdot                 <plug>\doteqdot '
 exe s:pA6.'Doteq                    <plug>\Doteq '
 exe s:pA6.'fallingdotseq            <plug>\fallingdotseq '
-exe s:pA6.'triangleeq               <plug>\triangleeq '
+exe s:pA6.'triangleq                <plug>\triangleq '
 exe s:pA6.'bumpeq                   <plug>\bumpeq '
 exe s:pA6.'Bumpeq                   <plug>\Bumpeq '
 exe s:pA6.'equiv<Tab>`=             <plug>\equiv '
@@ -372,7 +416,6 @@ exe s:pA8.'sqcup                    <plug>\sqcup'
 exe s:pA8.'amalg                    <plug>\amalg '
 exe s:pA8.'uplus                    <plug>\uplus '
 exe s:pA8.'triangleleft             <plug>\triangleleft '
-exe s:pA8.'amalg                    <plug>\amalg '
 exe s:pA8.'triangleright            <plug>\triangleright '
 exe s:pA8.'bigtriangleup            <plug>\bigtriangleup '
 exe s:pA8.'bigtriangledown          <plug>\bigtriangledown '
@@ -464,18 +507,18 @@ exe s:pA11.'scriptscriptstyle       <plug>\scriptscriptstyle'
 " }}}
 " {{{ MathDiacritics
 let s:pA12 = s:pA."&MathDiacritics."
-exe s:pA12.'acute{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\acute{ä}«»")<cr>'
-exe s:pA12.'bar{}<Tab>`_            <plug><C-r>=IMAP_PutTextWithMovement("\\bar{ä}«»")<cr>'
-exe s:pA12.'breve{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\breve{ä}«»")<cr>'
-exe s:pA12.'check{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\check{ä}«»")<cr>'
-exe s:pA12.'ddot{}<Tab>`:           <plug><C-r>=IMAP_PutTextWithMovement("\\ddot{ä}«»")<cr>'
-exe s:pA12.'dot{}<Tab>`;            <plug><C-r>=IMAP_PutTextWithMovement("\\dot{ä}«»")<cr>'
-exe s:pA12.'grave{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\grave{ä}«»")<cr>'
-exe s:pA12.'hat{}<Tab>`^            <plug><C-r>=IMAP_PutTextWithMovement("\\hat{ä}«»")<cr>'
-exe s:pA12.'tilde{}<tab>`~          <plug><C-r>=IMAP_PutTextWithMovement("\\tilde{ä}«»")<cr>'
-exe s:pA12.'vec{}                   <plug><C-r>=IMAP_PutTextWithMovement("\\vec{ä}«»")<cr>'
-exe s:pA12.'widehat{}               <plug><C-r>=IMAP_PutTextWithMovement("\\widehat{ä}«»")<cr>'
-exe s:pA12.'widetilde{}             <plug><C-r>=IMAP_PutTextWithMovement("\\widetilde{ä}«»")<cr>'
+exe s:pA12.'acute{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\acute{<++>}<++>")<cr>'
+exe s:pA12.'bar{}<Tab>`_            <plug><C-r>=IMAP_PutTextWithMovement("\\bar{<++>}<++>")<cr>'
+exe s:pA12.'breve{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\breve{<++>}<++>")<cr>'
+exe s:pA12.'check{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\check{<++>}<++>")<cr>'
+exe s:pA12.'ddot{}<Tab>`:           <plug><C-r>=IMAP_PutTextWithMovement("\\ddot{<++>}<++>")<cr>'
+exe s:pA12.'dot{}<Tab>`;            <plug><C-r>=IMAP_PutTextWithMovement("\\dot{<++>}<++>")<cr>'
+exe s:pA12.'grave{}                 <plug><C-r>=IMAP_PutTextWithMovement("\\grave{<++>}<++>")<cr>'
+exe s:pA12.'hat{}<Tab>`^            <plug><C-r>=IMAP_PutTextWithMovement("\\hat{<++>}<++>")<cr>'
+exe s:pA12.'tilde{}<tab>`~          <plug><C-r>=IMAP_PutTextWithMovement("\\tilde{<++>}<++>")<cr>'
+exe s:pA12.'vec{}                   <plug><C-r>=IMAP_PutTextWithMovement("\\vec{<++>}<++>")<cr>'
+exe s:pA12.'widehat{}               <plug><C-r>=IMAP_PutTextWithMovement("\\widehat{<++>}<++>")<cr>'
+exe s:pA12.'widetilde{}             <plug><C-r>=IMAP_PutTextWithMovement("\\widetilde{<++>}<++>")<cr>'
 exe s:pA12.'imath                   <plug><C-r>=IMAP_PutTextWithMovement("\\imath")<cr>'
 exe s:pA12.'jmath                   <plug><C-r>=IMAP_PutTextWithMovement("\\jmath")<cr>'
 " }}}
@@ -572,7 +615,6 @@ let s:pA15 = s:pA."&Logic."
 exe s:pA15.'lnot                    <plug>\lnot '
 exe s:pA15.'lor                     <plug>\lor '
 exe s:pA15.'land                    <plug>\land '
-exe s:pA15.'implies                 <plug>\implies '
 " }}}
 " {{{ Limits1
 let s:pA16 = s:pA."&Limits1."
@@ -609,6 +651,10 @@ exe s:pA16a.'rlcorner               <plug>\rlcorner '
 exe s:pA16a.'-sepcorner- :'
 exe s:pA16a.'vert                   <plug>\vert '
 exe s:pA16a.'Vert                   <plug>\Vert '
+exe s:pA16a.'lvert                  <plug>\lvert '
+exe s:pA16a.'lVert                  <plug>\lVert '
+exe s:pA16a.'rvert                  <plug>\rvert '
+exe s:pA16a.'rVert                  <plug>\rVert '
 exe s:pA16a.'uparrow                <plug>\uparrow '
 exe s:pA16a.'Uparrow                <plug>\Uparrow '
 exe s:pA16a.'downarrow              <plug>\downarrow '
@@ -641,6 +687,7 @@ exe s:pA17.'exp                     <plug>\exp '
 exe s:pA17.'gcd                     <plug>\gcd '
 exe s:pA17.'hom                     <plug>\hom '
 exe s:pA17.'inf                     <plug>\inf '
+exe s:pA17.'injlim                  <plug>\injlim '
 exe s:pA17.'ker                     <plug>\ker '
 exe s:pA17.'lg                      <plug>\lg '
 exe s:pA17.'lim                     <plug>\lim '
@@ -651,12 +698,17 @@ exe s:pA17.'log                     <plug>\log '
 exe s:pA17.'max                     <plug>\max '
 exe s:pA17.'min                     <plug>\min '
 exe s:pA17.'Pr                      <plug>\Pr '
+exe s:pA17.'projlim                 <plug>\projlim '
 exe s:pA17.'sec                     <plug>\sec '
 exe s:pA17.'sin                     <plug>\sin '
 exe s:pA17.'sinh                    <plug>\sinh '
 exe s:pA17.'sup                     <plug>\sup '
 exe s:pA17.'tan                     <plug>\tan '
 exe s:pA17.'tanh                    <plug>\tanh '
+exe s:pA17.'varlimsup               <plug>\varlimsup '
+exe s:pA17.'varliminf               <plug>\varliminf '
+exe s:pA17.'varinjlim               <plug>\varinjlim '
+exe s:pA17.'varprojlim              <plug>\varprojlim '
 " }}}
 " {{{ MathSpacing
 let s:pA18 = s:pA."MathSpacing."
@@ -667,6 +719,12 @@ exe s:pA18.'[space]                 <plug>\  '
 exe s:pA18.'quad                    <plug>\quad '
 exe s:pA18.'qquad                   <plug>\qquad '
 exe s:pA18.'!                       <plug>\! '
+exe s:pA18.'thinspace               <plug>\thinspace '
+exe s:pA18.'medspace                <plug>\medspace '
+exe s:pA18.'thickspace              <plug>\thickspace '
+exe s:pA18.'negthinspace            <plug>\negthinspace '
+exe s:pA18.'negmedspace             <plug>\negmedspace '
+exe s:pA18.'negthickspace           <plug>\negthickspace '
 " 1}}}
 
-" vim:fdm=marker:ts=4:sw=4:noet
+" vim:fdm=marker:ff=unix:noet:ts=4:sw=4

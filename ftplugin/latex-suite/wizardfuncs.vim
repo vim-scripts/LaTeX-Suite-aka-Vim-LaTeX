@@ -1,12 +1,10 @@
-"        File: texwizards.vim
+"        File: wizardfuncs.vim
 "      Author: Mikolaj Machowski <mikmach@wp.pl>
-" Last Change: Sun Oct 27 01:00 AM 2002 PST
 " Description: 
 " 
 " Installation:
 "      History: pluginized by Srinath Avadhanula
 "               ( srinath@fastmail.fm)
-"         TODO:
 "=============================================================================
 
 if exists('s:doneOnce')
@@ -14,224 +12,14 @@ if exists('s:doneOnce')
 endif
 let s:doneOnce = 1
 
-" Tex_MenuWizard: the king of the wizards {{{
-"
-function! Tex_MenuWizard(submenu, env)
-    if (a:env=="figure" || a:env=="figure*" )
-        return Tex_figure(a:env)
-    elseif (a:env=="table" || a:env=="table*")
-        return Tex_table(a:env)
-    elseif (a:env=="tabular" || a:env=="tabular*" ||
-           \a:env=="array" || a:env=="array*")
-        return Tex_tabular(a:env)
-    elseif (a:env=="eqnarray" || a:env=="equation*")
-        return Tex_eqnarray(a:env)
-    elseif (a:env=="list")
-        return Tex_list(a:env)
-    elseif (a:env=="itemize" || a:env=="theindex" ||
-           \a:env=="trivlist" || a:env=="enumerate")
-        return Tex_itemize(a:env)
-    elseif (a:env=="description")
-        return Tex_description(a:env)
-    elseif (a:env=="document")
-        return Tex_document(a:env)
-    elseif (a:env=="minipage")
-        return Tex_minipage(a:env)
-    elseif (a:env=="thebibliography")
-        return Tex_thebibliography(a:env)
-    else
-        return IMAP_PutTextWithMovement("\\begin{".a:env."}\<cr>«»\<cr>\\end{".a:env."}«»")
-    endif
-endfunction
-
-" }}}
-
+let s:mapleader = exists('mapleader') ? mapleader : "\\"
 " ==============================================================================
-" Specialized functions for various environments
+" Specialized functions for handling sections from command line
 " ============================================================================== 
-" Tex_itemize: {{{
-function! Tex_itemize(env)
-	return "\\begin{".a:env."}\<cr>\\item \<cr>\\end{".a:env."}«»\<Up>"
-endfunction
 
-" }}} 
-" Tex_description: {{{
-function! Tex_description(env)
-	let itlabel = input("(Optional) Item label? ")
-	if (itlabel != "")
-		let itlabel = '['.itlabel.']'
-	endif
-	return IMAP_PutTextWithMovement("\\begin{description}\<cr>\\item".itlabel." \<cr>\\end{description}«»\<Up>")
-endfunction
+com! -nargs=? TSection call Tex_section(<f-args>)
+com! -nargs=? TSectionAdvanced call Tex_section_adv(<f-args>)
 
-" }}} 
-" Tex_figure: {{{
-function! Tex_figure(env)
-    let flto = input("Float to (htbp)? ")
-    let caption = input("Caption? ")
-    let center = input("Center ([y]/n)? ")
-    let label = input('Label (for use with \ref)? ')
-    " additional to AUC Tex since my pics are usually external files
-    let pic = input("Name of Pic-File? ")
-    if (flto != "")
-        let flto = "[".flto."]\<cr>"
-    else
-        let flto = "\<cr>"
-    endif
-    if (pic != "")
-        let pic = "\\input{".pic."}\<cr>"
-    else
-        let pic = "ä\<cr>"
-    endif
-    if (caption != "")
-        let caption = "\\caption{".caption."}\<cr>"
-    endif
-    if (label != "")
-        let label = "\\label{fig:".label."}\<cr>"
-    endif
-    if (center == "y" || center == "")
-      let centr = "\\begin{center}\<cr>"
-      let centr = centr . pic 
-      let centr = centr . caption
-      let centr = centr . label
-      let centr = centr . "\\end{center}\<cr>"
-    else
-      let centr = pic
-      let centr = centr . caption
-      let centr = centr . label
-    endif
-    let figure = "\\begin{".a:env."}".flto
-    let figure = figure . centr
-    let figure = figure . "\\end{".a:env."}«»"
-    return IMAP_PutTextWithMovement(figure)
-endfunction
-
-" }}} 
-" Tex_table: {{{
-function! Tex_table(env)
-    let flto = input("Float to (htbp)? ")
-    let caption = input("Caption? ")
-    let center = input("Center (y/n)? ")
-    let label = input('Label (for use with \ref)? ')
-    if (flto != "")
-        let flto ="[".flto."]\<cr>"
-    else
-        let flto = ""
-    endif
-    let ret="\\begin{table}".flto
-    if (center == "y")
-        let ret=ret."\<cr>\\begin{center}"
-    endif
-    let foo = "\<cr>\\begin{tabular}"
-    let pos = input("(Optional) Position (t b)? ")
-    if (pos!="")
-        let foo = foo.'['.pos.']'
-    endif
-    let format = input("Format  ( l r c p{width} | @{text} )? ")
-	if format == ''
-		let format = '«»'
-	endif
-    let ret = ret.foo.'{'.format."}\<cr>«»\<cr>\\end{tabular}«»\<cr>"
-    if (center == "y")
-        let ret=ret."\\end{center}\<cr>"
-    endif
-    if (caption != "")
-        let ret=ret."\\caption{".caption."}\<cr>"
-    endif
-    if (label != "")
-        let ret=ret."\\label{tab:".label."}\<cr>"
-    endif
-    let ret=ret."\\end{table}«»"
-	return IMAP_PutTextWithMovement(ret)
-endfunction
-
-" }}} 
-" Tex_tabular: {{{
-function! Tex_tabular(env)
-    let pos = input("(Optional) Position (t b)? ")
-    if (pos!="")
-      let pos = '['.pos.']'
-    endif
-    let format = input("Format  ( l r c p{width} | @{text} )? ")
-    if format != ""
-      let format = '{'.format.'}'
-    endif
-    return IMAP_PutTextWithMovement("\\begin{".a:env."}".pos.format."\<cr> \<cr>\\end{".a:env."}«»\<Up>\<Left>")
-endfunction
-
-" }}} 
-" Tex_eqnarray: {{{
-function! Tex_eqnarray(env)
-    let label = input("Label (for use with \ref)? ")
-    if (label != "")
-        let arrlabel = "\\label{eqn:".label."}\<cr> "
-      else
-        let arrlabel = " "
-    endif
-    return IMAP_PutTextWithMovement("\\begin{".a:env."}\<cr>".arrlabel."\<cr>\\end{".a:env."}«»\<Up>\<Left>")
-endfunction
-
-" }}} 
-" Tex_list: {{{
-function! Tex_list(env)
-	let label = input("Label (for \item)? ")
-	if (label != "")
-		let label = "{".label."}"
-		let addcmd = input("Additional commands? ")
-		if (addcmd != "")
-			let label = label . "{".addcmd."}"
-		endif
-	else
-		let label = ""
-	endif
-	return IMAP_PutTextWithMovement("\\begin{list}".label."\<cr>\\item \<cr>\\end{list}«»\<Up>")
-endfunction
-
-" }}} 
-" Tex_document: {{{
-function! Tex_document(env)
-    let dstyle = input("Document style? ")
-    let opts = input("(Optional) Options? ")
-    let foo = '\documentclass'
-    if (opts=="")
-        let foo = foo.'{'.dstyle.'}'
-    else
-        let foo = foo.'['.opts.']'.'{'.dstyle.'}'
-    endif
-    return IMAP_PutTextWithMovement(foo . "\<cr>\<cr>\\begin{document}\<cr>\<cr>\\end{document}\<Up>")
-endfunction
-
-" }}} 
-" Tex_minipage: {{{
-function! Tex_minipage(env)
-    let foo = '\begin{minipage}'
-    let pos = input("(Optional) Position (t b)? ")
-    let width = input("Width? ")
-    if (pos=="")
-        let foo = foo.'{'.width.'}'
-    else
-        let  foo = foo.'['.pos.']{'.width.'}'
-    endif
-    return IMAP_PutTextWithMovement(foo . "\<cr> \<cr>\\end{minipage}\<Up>\<Left>")
-endfunction
-
-" }}} 
-" Tex_thebibliography: {{{
-function! Tex_thebibliography()
-    " AUC Tex: "Label for BibItem: 99"
-    let indent = input("Indent for BibItem? ")
-    let foo = "{".indent."}"
-    let biblabel = input("(Optional) Bibitem label? ")
-    let key = input("Add key? ")
-    let bar = "\\bibitem"
-    if (biblabel != "")
-        let bar = bar.'['.biblabel.']'
-    endif
-    let bar = bar.'{'.key.'}'
-    return IMAP_PutTextWithMovement("\\begin{thebibliography}".foo."\<cr>".bar." \<cr>\\end{thebibliography}\<Up>\<Left>")
-endfunction
-
-" }}} 
 " Tex_VisSecAdv: handles visual selection for sections {{{
 function! Tex_VisSecAdv(section)
 	let shorttitle =  input("Short title? ")
@@ -245,7 +33,7 @@ function! Tex_VisSecAdv(section)
 	if shorttitle != ""
 		let shorttitle = '['.shorttitle.']'
 	endif
-	exe IMAP_PutTextWithMovement("normal `>a}\<cr>\<esc>`<i".sstructure.toc.shorttitle."{")
+	exe "normal `>a}\<cr>\<esc>`<i".sstructure.toc.shorttitle."{"
 endfunction 
 
 " }}}
@@ -274,14 +62,6 @@ endfunction
 
 
 " }}}
-
-" ==============================================================================
-" Specialized functions for handling sections from command line
-" ============================================================================== 
-
-com! -nargs=? TSection call Tex_section(<f-args>)
-com! -nargs=? TSectionAdvanced call Tex_section_adv(<f-args>)
-
 function! Tex_section(...) "{{{
 	silent let pos = line('.').' | normal! '.virtcol('.').'|'
 	silent let last_section_value = s:Tex_section_detection()
@@ -415,9 +195,183 @@ function! s:Tex_section_name(section_value) "{{{
 	return section_name
 endfunction "}}}
 function! s:Tex_section_call(section_name) "{{{
-	exe "normal! i\\".a:section_name."{«»}«»\<Esc>0\<C-j>"
-"	let ret_section = "\\".a:section_name."{«»}«»"
+	exe "normal! i\\".a:section_name."{<++>}<++>\<Esc>0\<C-j>"
+"	let ret_section = "\\".a:section_name."{<++>}<++>"
 "	exe "normal! i\<C-r>=IMAP_PutTextWithMovement(ret_section)\<CR>"
 "	normal f}i
 endfunction "}}}
-" vim:fdm=marker
+
+" ==============================================================================
+" Add looking help into latexhelp.txt
+" ============================================================================== 
+
+inoremap <buffer> <silent> <F1> <C-O>:call <SID>TexHelp()<CR>
+nnoremap <buffer> <silent> <F1> :call <SID>TexHelp()<CR>
+command! -nargs=0 THelp call <SID>TexHelp()
+
+" TexHelp: Cursor being on LaTeX item check if exists help tag about it " {{{
+function! s:TexHelp()
+	let syntax_item = synIDattr(synID(line('.'),col('.')-1,0),"name")
+	if syntax_item =~ '^tex'
+		setlocal isk+=\
+		let curword = expand('<cword>')
+		setlocal isk-=\
+		let v:errmsg = ''
+		if curword =~ "^\\" || syntax_item == 'texSectionName'
+			exe 'silent! help '.curword
+			if v:errmsg =~ '^E149:'
+				echohl ErrorMsg
+				exe "echomsg 'Sorry, no help for LaTeX: ".curword."'"
+				echohl None
+				let v:errmsg = ''
+			endif
+		else
+			help
+		endif
+	else
+		help
+	endif
+endfunction " }}}
+
+" ==============================================================================
+" Tables of shortcuts
+" ============================================================================== 
+"
+command! -nargs=? Tshortcuts call Tex_shortcuts(<f-args>)<CR>
+
+" Tex_shortcuts: Show shortcuts in terminal after : command {{{
+function! Tex_shortcuts(...)
+	if a:0 == 0
+		let shorts = input(" Allowed arguments are:"
+		\."\n g     General"
+		\."\n e     Environments"
+		\."\n f     Fonts"
+		\."\n s     Sections"
+		\."\n m     Math"
+		\."\n a     All"
+		\."\n Enter your choice (<Enter> quits) : ")
+		call Tex_shortcuts(shorts)
+	elseif a:1 == 'g'
+		echo g:generalshortcuts
+	elseif a:1 == 'e'
+		echo g:environmentshortcuts
+	elseif a:1 == 'f'
+		echo g:fontshortcuts
+	elseif a:1 == 's'
+		echo g:sectionshortcuts
+	elseif a:1 == 'm'
+		echo g:mathshortcuts
+	elseif a:1 == 'a'
+		echo g:generalshortcuts
+		echo g:environmentshortcuts
+		echo g:fontshortcuts
+		echo g:sectionshortcuts
+		echo g:mathshortcuts
+	endif
+
+endfunction
+" }}}
+
+" General shortcuts {{{
+let g:generalshortcuts = ''
+\."\n General shortcuts"
+\."\n <mapleader> is a value of <Leader>"
+\."\n ".s:mapleader.'ll	compile whole document'
+\."\n ".s:mapleader.'lv	view compiled document'
+\."\n ".s:mapleader.'lp	view last compiled part of document'
+\."\n ".s:mapleader.'ls	make forward searching if possible'
+\."\n ".s:mapleader.'rf	refresh folds'
+" }}}
+" Environment shortcuts {{{
+let g:environmentshortcuts = ''
+\."\n Environment shortcuts"
+\."\n <mapleader> is a value of g:Tex_Leader2"
+\."\n I     v&V                       I     v&V"
+\."\n ELI   ".g:Tex_Leader2."li   list                EQN   ".g:Tex_Leader2."qn   quotation"
+\."\n EDE   ".g:Tex_Leader2."de   description         ESB   ".g:Tex_Leader2."sb   sloppybar"
+\."\n EEN   ".g:Tex_Leader2."en   enumerate           ETI   ".g:Tex_Leader2."ti   theindex"
+\."\n EIT   ".g:Tex_Leader2."it   itemize             ETP   ".g:Tex_Leader2."tp   titlepage"
+\."\n ETI   ".g:Tex_Leader2."ti   theindex            EVM   ".g:Tex_Leader2."vm   verbatim"
+\."\n ETL   ".g:Tex_Leader2."tl   trivlist            EVE   ".g:Tex_Leader2."ve   verse"
+\."\n ETE   ".g:Tex_Leader2."te   table               ETB   ".g:Tex_Leader2."tb   thebibliography"
+\."\n ETG   ".g:Tex_Leader2."tg   tabbing             ENO   ".g:Tex_Leader2."no   note"
+\."\n ETR   ".g:Tex_Leader2."tr   tabular             EOV   ".g:Tex_Leader2."ov   overlay"
+\."\n EAR   ".g:Tex_Leader2."ar   array               ESL   ".g:Tex_Leader2."sl   slide"
+\."\n EDM   ".g:Tex_Leader2."dm   displaymath         EAB   ".g:Tex_Leader2."ab   abstract"
+\."\n EEA   ".g:Tex_Leader2."ea   eqnarray            EAP   ".g:Tex_Leader2."ap   appendix"
+\."\n EEQ   ".g:Tex_Leader2."eq   equation            ECE   ".g:Tex_Leader2."ce   center"
+\."\n EDO   ".g:Tex_Leader2."do   document            EFI   ".g:Tex_Leader2."fi   figure"
+\."\n EFC   ".g:Tex_Leader2."fc   filecontents        ELR   ".g:Tex_Leader2."lr   lrbox"
+\."\n EFL   ".g:Tex_Leader2."fl   flushleft           EMP   ".g:Tex_Leader2."mp   minipage"
+\."\n EFR   ".g:Tex_Leader2."fr   flushright          EPI   ".g:Tex_Leader2."pi   picture"
+\."\n EMA   ".g:Tex_Leader2."ma   math                EQE   ".g:Tex_Leader2."qe   quote"
+" }}}
+" Font shortcuts {{{
+let g:fontshortcuts = ''
+\."\n Font shortcuts"
+\."\n <mapleader> is a value of g:Tex_Leader"
+\."\n Shortcuts         Effects"
+\."\n I        v&V      I&v               V"
+\."\n FBF      ".g:Tex_Leader."bf      \\textbf{}         {\\bfseries }"
+\."\n FMD      ".g:Tex_Leader."md      \\textmd{}         {\\mdseries }"
+\."\n"
+\."\n FTT      ".g:Tex_Leader."tt      \\texttt{}         {\\ttfamily }"
+\."\n FSF      ".g:Tex_Leader."sf      \\textsf{}         {\\sffamily }"
+\."\n FRM      ".g:Tex_Leader."rm      \\textrm{}         {\\rmfamily }"
+\."\n"
+\."\n FUP      ".g:Tex_Leader."up      \\textup{}         {\\upshape }"
+\."\n FSL      ".g:Tex_Leader."sl      \\textsl{}         {\\slshape }"
+\."\n FSC      ".g:Tex_Leader."sc      \\textsc{}         {\\scshape }"
+\."\n FIT      ".g:Tex_Leader."it      \\textit{}         {\\itshape }"
+" }}}
+" Section shortcuts {{{
+let g:sectionshortcuts = ''
+\."\n Section shortcuts"
+\."\n <mapleader> is a value of g:Tex_Leader2"
+\."\n I     v&V"
+\."\n SPA   ".g:Tex_Leader2."pa   part"
+\."\n SCH   ".g:Tex_Leader2."ch   chapter"
+\."\n SSE   ".g:Tex_Leader2."se   section"
+\."\n SSS   ".g:Tex_Leader2."ss   subsection"
+\."\n SS2   ".g:Tex_Leader2."s2   subsubsection"
+\."\n SPG   ".g:Tex_Leader2."pg   paragraph"
+\."\n SSP   ".g:Tex_Leader2."sp   subparagraph"
+" }}}
+" Math shortcuts {{{
+let g:mathshortcuts = ''
+\."\n Math shortcuts - Insert mode"
+\."\n `a     \\alpha            `b     \\beta"
+\."\n `g     \\gamma            `d     \\delta"
+\."\n `e     \\varepsilon       `z     \\zeta"
+\."\n `h     \\eta              `q     \\theta"
+\."\n `i     \\iota             `k     \\kappa"
+\."\n `l     \\lambda           `m     \\mu"
+\."\n `n     \\nu               `x     \\xi"
+\."\n `p     \\pi               `r     \\rho"
+\."\n `s     \\sigma            `v     \\varsigma"
+\."\n `t     \\tau              `u     \\upsilon"
+\."\n `f     \\varphi           `c     \\chi"
+\."\n `y     \\psi              `w     \\omega"
+\."\n `A     \\Alpha            `B     \\Beta"
+\."\n `G     \\Gamma            `D     \\Delta"
+\."\n `E     \\Epsilon          `Z     \\mathrm{Z}"
+\."\n `H     \\Eta              `K     \\Kappa"
+\."\n `L     \\Lambda           `M     \\Mu"
+\."\n `N     \\Nu               `X     \\Xi"
+\."\n `P     \\Pi               `R     \\Rho"
+\."\n `S     \\Sigma            `T     \\Tau"
+\."\n `U     \\Upsilon          `C     \\Chi"
+\."\n `Y     \\Psi              `W     \\Omega"
+\."\n `(     \\subset           `)     \\Subset"
+\."\n `=     \\equiv            =~     \\approx"
+\."\n `-     \\bigcap           `+     \\bigcup"
+\."\n `.     \\cdot             `*     \\times"
+\."\n `\\     \\setminus         `@     \\circ"
+\."\n `&     \\wedge            `,     \\nonumber"
+\."\n `8     \\infty            `_     \\bar{}"
+\."\n `:     \\ddot{}           `;     \\dot{}"
+\."\n `^     \\hat{}            `~     \\tilde{}"
+\."\n `6     \\partial"
+" }}}
+
+" vim:fdm=marker:ff=unix:noet:ts=4:sw=4

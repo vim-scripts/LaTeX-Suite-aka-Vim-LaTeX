@@ -1,13 +1,39 @@
 "=============================================================================
 " 	     File: folding.vim
 "      Author: Srinath Avadhanula
-" 	  Version: 1.0 
+" 	  Version: $Id: folding.vim,v 1.12.2.1 2003/11/25 20:34:54 srinathava Exp $
 "     Created: Tue Apr 23 05:00 PM 2002 PST
-" Last Change: Sun Oct 27 10:00 PM 2002 PST
 " 
 "  Description: functions to interact with Syntaxfolds.vim
 "=============================================================================
 
+nnoremap <unique> <Plug>Tex_RefreshFolds :call MakeTexFolds(1)<cr>
+
+augroup LatexSuite
+	au LatexSuite User LatexSuiteFileType 
+		\ call Tex_Debug('folding.vim: catching LatexSuiteFileType') | 
+		\ call s:SetFoldOptions()
+augroup END
+
+" SetFoldOptions: sets maps for every buffer {{{
+" Description: 
+function! <SID>SetFoldOptions()
+	if exists('b:doneSetFoldOptions')
+		return
+	endif
+	let b:doneSetFoldOptions = 1
+
+	setlocal foldtext=TexFoldTextFunction()
+
+	if g:Tex_Folding && g:Tex_AutoFolding
+		call MakeTexFolds(0)
+	endif
+
+	if g:Tex_Folding && !hasmapto('<Plug>Tex_RefreshFolds')
+		nmap <silent> <buffer> <Leader>rf  <Plug>Tex_RefreshFolds
+	endif
+
+endfunction " }}}
 " MakeTexFolds: function to create fold items for latex. {{{
 "
 " used in conjunction with MakeSyntaxFolds().
@@ -125,6 +151,38 @@ function! MakeTexFolds(force)
 		\ 0
 		\ )
 	" }}}
+	" {{{ intertext
+	call AddSyntaxFoldItem (
+		\ '^\s*\\intertext{',
+		\ '^\s*}',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
+	" {{{ abstract
+	call AddSyntaxFoldItem (
+		\ '^\s*\\begin{abstract}',
+		\ '^\s*\\end{abstract}',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
+	" {{{ keywords
+	call AddSyntaxFoldItem (
+		\ '^\s*\\begin{keywords}',
+		\ '^\s*\\end{keywords}',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
+	" {{{ thebibliography
+	call AddSyntaxFoldItem (
+		\ '^\s*\\begin{thebibliography}',
+		\ '^\s*\\end{thebibliography}',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
 	" {{{ table
 	call AddSyntaxFoldItem (
 		\ '^\s*\\begin{table}',
@@ -137,6 +195,22 @@ function! MakeTexFolds(force)
 	call AddSyntaxFoldItem (
 		\ '^\s*\\begin{figure',
 		\ '^\s*\\end{figure}',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
+	" {{{ align/alignat
+	call AddSyntaxFoldItem (
+		\ '^\s*\\begin{align',
+		\ '^\s*\\end{align',
+		\ 0,
+		\ 0
+		\ )
+	" }}}
+	" {{{ gather
+	call AddSyntaxFoldItem (
+		\ '^\s*\\begin{gather',
+		\ '^\s*\\end{gather',
 		\ 0,
 		\ 0
 		\ )
@@ -162,7 +236,7 @@ function! MakeTexFolds(force)
 	" {{{ subsubsection
 	call AddSyntaxFoldItem (
 		\ '^\s*\\subsubsection\W',
-		\ '^\s*%%fakesection\|^\s*\\section\|^\s*\\subsection\|^\s*\\subsubsection\|^\s*\\end{document}',
+		\ '^\s*\\appendix\W\|^\s*\\subsubsection\W\|^\s*\\subsection\W\|^\s*\\section\W\|^\s*%%fakesection\|^\s*\\chapter\W\|^\s*\\begin{slide\|^\s*\\end{document',
 		\ 0,
 		\ -1,
 		\ )
@@ -170,7 +244,7 @@ function! MakeTexFolds(force)
 	" {{{ subsection
 	call AddSyntaxFoldItem (
 		\ '^\s*\\subsection\W',
-		\ '^\s*%%fakesection\|^\s*\\section\|^\s*\\subsection\|^\s*\\end{document}',
+		\ '^\s*\\appendix\W\|^\s*\\subsection\W\|^\s*\\section\W\|^\s*%%fakesection\|^\s*\\bibliography\|^\s*\\chapter\W\|^\s*\\begin{slide\|^\s*\\begin{thebibliography\|^\s*\\end{document',
 		\ 0,
 		\ -1,
 		\ )
@@ -178,7 +252,7 @@ function! MakeTexFolds(force)
 	" {{{ section
 	call AddSyntaxFoldItem (
 		\ '^\s*\\section\W',
-		\ '^\s*%%fakesection\|^\s*\\section\|^\s*\\end{document}',
+		\ '^\s*\\appendix\W\|^\s*\\section\W\|^\s*\\bibliography\|^\s*%%fakesection\|^\s*\\chapter\W\|^\s*\\begin{slide\|^\s*\\begin{thebibliography\|^\s*\\end{document',
 		\ 0,
 		\ -1,
 		\ )
@@ -186,15 +260,15 @@ function! MakeTexFolds(force)
 	" {{{ fakesection (for forcing a fold item manually)
 	call AddSyntaxFoldItem (
 		\ '^\s*%%fakesection',
-		\ '^\s*%%fakesection\|^\s*\\section\|^\s*\\subsection\|^\s*\\subsubsection\|^\s*\\end{document}',
+		\ '^\s*\\appendix\W\|^\s*\\section\W\|^\s*%%fakesection\|^\s*\\bibliography\|^\s*\\chapter\W\|^\s*\\begin{slide\|^\s*\\begin{thebibliography\|^\s*\\end{document',
 		\ 0,
 		\ -1,
 		\ )
 	" }}}
 	" {{{ chapter
-	call AddSyntaxFoldItem (
-		\ '^\s*\\chapter\*\={',
-		\ '^\s*\\section',
+	call AddSyntaxFoldItem(
+		\ '^\s*\\chapter\W',
+		\ '^\s*\\appendix\W\|^\s*\\chapter\W\|^\s*\\bibliography\|^\s*\\begin{slide\|^\s*\\begin{thebibliography\|^\s*\\end{document',
 		\ 0,
 		\ -1
 		\ )
@@ -202,7 +276,7 @@ function! MakeTexFolds(force)
 	" {{{ slide
 	call AddSyntaxFoldItem (
 		\ '^\s*\\begin{slide',
-		\ '^\s*\\end{slide',
+		\ '^\s*\\appendix\W\|^\s*\\chapter\W\|^\s*\\end{slide\|^\s*\\end{document',
 		\ 0,
 		\ 0
 		\ )
@@ -216,7 +290,7 @@ endfunction
 " TexFoldTextFunction: create fold text for folds {{{
 function! TexFoldTextFunction()
 	if getline(v:foldstart) =~ '^\s*\\begin{'
-		let header = matchstr(getline(v:foldstart), '^\s*\\begin{\zs\(figure\|table\|equation\|eqnarray\)[^}]*\ze}')
+		let header = matchstr(getline(v:foldstart), '^\s*\\begin{\zs\(figure\|sidewaysfigure\|table\|equation\|eqnarray\|gather\|align\|abstract\|keywords\|thebibliography\)[^}]*\ze}')
 
 		let caption = ''
 		let label = ''
@@ -247,4 +321,4 @@ function! TexFoldTextFunction()
 endfunction
 " }}}
 
-" vim:fdm=marker:ts=4:sw=4:noet
+" vim:fdm=marker:ff=unix:noet:ts=4:sw=4
